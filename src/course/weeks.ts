@@ -1,5 +1,5 @@
-import type { CourseWeek } from './types';
-import { linearAlgebraExercise } from './weeks/week-1/linear-algebra';
+import type { CourseWeek } from './types.js';
+import { linearAlgebraExercise } from './weeks/week-1/linear-algebra.js';
 
 export const courseWeeks: CourseWeek[] = [
   {

@@ -1,8 +1,8 @@
-import type { Exercise } from '../../types';
+import type { Exercise } from '../../types.js';
 
 export const linearAlgebraExercise: Exercise = {
   id: 'exercise-1-linear-algebra',
-  title: 'Exercise 1 — Linear Algebra',
+  title: 'Exercise 1 - Linear Algebra',
   subtitle: 'Word embeddings, systems of equations, linearity, and derivative matrices.',
   deadline: 'Monday, June 8',
   aiPolicy:
@@ -11,7 +11,7 @@ export const linearAlgebraExercise: Exercise = {
     'Practice core linear algebra ideas by combining small Python experiments with written mathematical explanations.',
   parts: [
     {
-      title: 'Part 1 — Word Embeddings',
+      title: 'Part 1 - Word Embeddings',
       summary:
         'Load pre-trained embedding vectors for king, queen, dog, cat, and coffee, then compare their distances.',
       tasks: [
@@ -25,18 +25,18 @@ export const linearAlgebraExercise: Exercise = {
       ],
     },
     {
-      title: 'Part 2 — Solving a Linear System',
+      title: 'Part 2 - Solving a Linear System',
       summary:
         'Rewrite three equations as A @ x = b and solve with the inverse matrix method.',
       tasks: [
-        'Represent x1 + x2 + x3 = 6, x1 - x2 + x3 = 2, and x1 + x2 - x3 = 0 as a 3×3 matrix A and vectors x and b.',
-        'Assuming A is invertible, solve for x1, x2, and x3 using x = A⁻¹b.',
+        'Represent x1 + x2 + x3 = 6, x1 - x2 + x3 = 2, and x1 + x2 - x3 = 0 as a 3x3 matrix A and vectors x and b.',
+        'Assuming A is invertible, solve for x1, x2, and x3 using x = A^-1 b.',
         'Show enough intermediate work to make the solution easy to follow.',
       ],
       notes: ['The expected solution is x1 = 1, x2 = 3, and x3 = 2.'],
     },
     {
-      title: 'Part 3 — Linearity of Matrix Multiplication',
+      title: 'Part 3 - Linearity of Matrix Multiplication',
       summary:
         'State the conditions for a linear operation and show matrix multiplication satisfies them.',
       tasks: [
@@ -46,15 +46,15 @@ export const linearAlgebraExercise: Exercise = {
       ],
     },
     {
-      title: 'Part 4 — The Polynomial Derivative Matrix',
+      title: 'Part 4 - The Polynomial Derivative Matrix',
       summary:
-        'Use a 5×1 all-ones polynomial coefficient vector p and a 5×5 derivative matrix D.',
+        'Use a 5x1 all-ones polynomial coefficient vector p and a 5x5 derivative matrix D.',
       tasks: [
         'Decide whether D @ p is well-defined and compute it.',
         'Decide whether p.T @ D is well-defined and compute it.',
-        'Decide whether D @ D, also written D², is well-defined and compute or characterize it.',
+        'Decide whether D @ D, also written D^2, is well-defined and compute or characterize it.',
         'Compute the scalar p.T @ D @ p and explain whether it has a meaningful interpretation.',
-        'Generalize pᵀDp for an n×1 all-ones vector p and the corresponding n×n derivative matrix D.',
+        'Generalize p.T @ D @ p for an n x 1 all-ones vector p and the corresponding n x n derivative matrix D.',
       ],
       notes: [
         'The derivative matrix convention should be stated clearly, because coefficient ordering can change the exact matrix layout.',

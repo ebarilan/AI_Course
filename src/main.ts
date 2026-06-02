@@ -1,6 +1,6 @@
-import { courseWeeks } from './course/weeks';
-import { siteConfig } from './siteConfig';
-import type { CourseWeek, Exercise } from './course/types';
+import { courseWeeks } from './course/weeks.js';
+import { siteConfig } from './siteConfig.js';
+import type { CourseWeek, Exercise } from './course/types.js';
 
 let selectedWeekSlug = courseWeeks[0]?.slug ?? 'week-1';
 
@@ -58,21 +58,21 @@ function renderHero(selectedWeek: CourseWeek): string {
   return html`
     <section class="hero-card">
       <div class="hero-copy">
-        <p class="eyebrow">${icon('✨')} TypeScript · Vercel-ready · AI course notes</p>
+        <p class="eyebrow">${icon('*')} TypeScript / Vercel-ready / AI course notes</p>
         <h1>${escapeHtml(siteConfig.ownerName)} ${escapeHtml(siteConfig.siteTitle)}</h1>
         <p>
           A playful learning hub for weekly AI course exercises, organized so each assignment is easy to find,
           understand, and extend as the course grows. ${escapeHtml(siteConfig.hostingNote)}
         </p>
         <div class="hero-actions">
-          <a href="#exercise" class="primary-action">Open ${escapeHtml(selectedWeek.title)} <span aria-hidden="true">→</span></a>
+          <a href="#exercise" class="primary-action">Open ${escapeHtml(selectedWeek.title)} <span aria-hidden="true">-&gt;</span></a>
           <a href="#about" class="secondary-action">About me</a>
         </div>
       </div>
       <div class="hero-orbit" aria-hidden="true">
-        <span class="planet planet-one">🤖</span>
-        <span class="planet planet-two">📐</span>
-        <span class="planet planet-three">☕</span>
+        <span class="planet planet-one">ML</span>
+        <span class="planet planet-two">Ax</span>
+        <span class="planet planet-three">01</span>
         <div class="orbit-core">AI</div>
       </div>
     </section>
@@ -82,7 +82,7 @@ function renderHero(selectedWeek: CourseWeek): string {
 function renderSidebar(): string {
   return html`
     <aside class="week-nav" aria-label="Course weeks">
-      <div class="nav-title">${icon('📚')} Weeks</div>
+      <div class="nav-title">${icon('#')} Weeks</div>
       ${courseWeeks.map((week) => html`
         <button
           class="week-button ${week.slug === selectedWeekSlug ? 'active' : ''}"
@@ -102,9 +102,9 @@ function renderAboutCard(): string {
   return html`
     <section class="info-card about-card" id="about">
       <div class="section-heading">
-        ${icon('👋')}
+        ${icon('i')}
         <div>
-          <p class="eyebrow">Chapter · About me</p>
+          <p class="eyebrow">Chapter / About me</p>
           <h2>Hi, I am building my AI course portfolio.</h2>
         </div>
       </div>
@@ -114,10 +114,10 @@ function renderAboutCard(): string {
         is easier when the matrices have good vibes.
       </p>
       <div class="about-tags">
-        <span>🧠 Curious learner</span>
-        <span>📚 Weekly exercises</span>
-        <span>🚀 Hosted on Vercel</span>
-        <span>💬 AI chat logs included</span>
+        <span>Curious learner</span>
+        <span>Weekly exercises</span>
+        <span>Hosted on Vercel</span>
+        <span>AI chat logs included</span>
       </div>
     </section>
   `;
@@ -127,7 +127,7 @@ function renderExerciseCard(exercise: Exercise): string {
   return html`
     <article class="info-card exercise-card" id="exercise">
       <div class="section-heading">
-        ${icon('🧠')}
+        ${icon('1')}
         <div>
           <p class="eyebrow">Ready assignment</p>
           <h2>${escapeHtml(exercise.title)}</h2>
@@ -135,8 +135,8 @@ function renderExerciseCard(exercise: Exercise): string {
       </div>
       <p class="subtitle">${escapeHtml(exercise.subtitle)}</p>
       <div class="meta-row">
-        <span>📅 Deadline: ${escapeHtml(exercise.deadline)}</span>
-        <span>☕ AI allowed, prompts required</span>
+        <span>Deadline: ${escapeHtml(exercise.deadline)}</span>
+        <span>AI allowed, prompts required</span>
       </div>
       <div class="callout"><strong>Goal:</strong> ${escapeHtml(exercise.objective)}</div>
       <div class="callout ai-policy"><strong>AI policy:</strong> ${escapeHtml(exercise.aiPolicy)}</div>
@@ -147,7 +147,7 @@ function renderExerciseCard(exercise: Exercise): string {
             <h3>${escapeHtml(part.title)}</h3>
             <p>${escapeHtml(part.summary)}</p>
             <ul>${part.tasks.map((task) => `<li>${escapeHtml(task)}</li>`).join('')}</ul>
-            ${(part.notes ?? []).map((note) => `<p class="tiny-note">💡 ${escapeHtml(note)}</p>`).join('')}
+            ${(part.notes ?? []).map((note) => `<p class="tiny-note">${escapeHtml(note)}</p>`).join('')}
           </section>
         `).join('')}
       </div>
@@ -161,7 +161,7 @@ function renderChecklist(title: string, items: string[]): string {
   return html`
     <section class="checklist">
       <h3>${escapeHtml(title)}</h3>
-      <ul>${items.map((item) => `<li>✅ ${escapeHtml(item)}</li>`).join('')}</ul>
+      <ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
     </section>
   `;
 }
@@ -172,7 +172,7 @@ function renderComingSoon(week: CourseWeek): string {
       <p class="eyebrow">Planned</p>
       <h2>${escapeHtml(week.title)}</h2>
       <p>${escapeHtml(week.theme)}</p>
-      <p>Drop the next exercise into the course data folder and this page will be ready for another tiny robot parade.</p>
+      <p>Drop the next exercise into the course data folder and this page will be ready for another update.</p>
     </section>
   `;
 }
@@ -181,7 +181,7 @@ function renderRepositoryGuide(exercise?: Exercise): string {
   return html`
     <section class="info-card repo-guide">
       <div class="section-heading">
-        ${icon('🗂️')}
+        ${icon('/')}
         <div>
           <p class="eyebrow">Repository organization</p>
           <h2>Each exercise stays small, readable, and self-explained.</h2>
@@ -196,4 +196,17 @@ function renderRepositoryGuide(exercise?: Exercise): string {
   `;
 }
 
-render();
+try {
+  render();
+} catch (error) {
+  console.error('[site] render failed', error);
+  root.innerHTML = html`
+    <main class="app-shell">
+      <section class="info-card error-card" role="alert">
+        <p class="eyebrow">Site error</p>
+        <h1>AI Course Exercise Lab</h1>
+        <p>The course page could not render. Check the browser console for details.</p>
+      </section>
+    </main>
+  `;
+}
