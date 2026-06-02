@@ -178,8 +178,12 @@ function renderSolutionPanel(exercise: Exercise): string {
       </div>
       <div class="solution-actions">
         <a class="primary-action" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
-        <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">Open notebook JSON</a>
+        <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">View notebook file</a>
       </div>
+      <p class="run-note">
+        To run it, download the notebook from this page and open it in Jupyter, VS Code, or Google Colab.
+        The first execution may download the pre-trained model.
+      </p>
       <div class="answer-grid">
         <div>
           <span class="answer-label">Model</span>
