@@ -3,6 +3,31 @@ export type ExercisePart = {
   summary: string;
   tasks: string[];
   notes?: string[];
+  solutionSteps?: string[];
+  notebookFiles?: string[];
+  examples?: {
+    title: string;
+    body: string;
+    steps?: string[];
+  }[];
+};
+
+export type SolutionPairDistance = {
+  first: string;
+  second: string;
+  distance: number;
+};
+
+export type ExerciseSolution = {
+  title: string;
+  notebookPath: string;
+  modelName: string;
+  distanceMetric: string;
+  dimensionality: number;
+  distances: SolutionPairDistance[];
+  closestPairs: SolutionPairDistance[];
+  furthestPairs: SolutionPairDistance[];
+  explanation: string[];
 };
 
 export type Exercise = {
@@ -16,6 +41,7 @@ export type Exercise = {
   deliverables: string[];
   starterFiles: string[];
   chatLogGuidance: string[];
+  solution?: ExerciseSolution;
 };
 
 export type CourseWeek = {

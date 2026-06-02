@@ -147,13 +147,111 @@ function renderExerciseCard(exercise: Exercise): string {
             <h3>${escapeHtml(part.title)}</h3>
             <p>${escapeHtml(part.summary)}</p>
             <ul>${part.tasks.map((task) => `<li>${escapeHtml(task)}</li>`).join('')}</ul>
+            ${(part.examples ?? []).map((example) => renderExample(example.title, example.body, example.steps)).join('')}
             ${(part.notes ?? []).map((note) => `<p class="tiny-note">${escapeHtml(note)}</p>`).join('')}
+            ${part.solutionSteps ? renderSolutionSteps(part.solutionSteps) : ''}
+            ${part.notebookFiles ? renderNotebookLinks(part.notebookFiles) : ''}
           </section>
         `).join('')}
       </div>
+      ${exercise.solution ? renderSolutionPanel(exercise) : ''}
       ${renderChecklist('Submission checklist', exercise.deliverables)}
       ${renderChecklist('Chat log checklist', exercise.chatLogGuidance)}
     </article>
+  `;
+}
+
+function renderSolutionPanel(exercise: Exercise): string {
+  const solution = exercise.solution;
+  if (!solution) {
+    return '';
+  }
+
+  return html`
+    <section class="solution-panel" id="part-1-solution">
+      <div class="section-heading">
+        ${icon('=')}
+        <div>
+          <p class="eyebrow">Implemented solution</p>
+          <h3>${escapeHtml(solution.title)}</h3>
+        </div>
+      </div>
+      <div class="solution-actions">
+        <a class="primary-action" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
+        <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">Open notebook JSON</a>
+      </div>
+      <div class="answer-grid">
+        <div>
+          <span class="answer-label">Model</span>
+          <strong>${escapeHtml(solution.modelName)}</strong>
+        </div>
+        <div>
+          <span class="answer-label">Vector length</span>
+          <strong>${solution.dimensionality}</strong>
+        </div>
+        <div>
+          <span class="answer-label">Distance metric</span>
+          <strong>${escapeHtml(solution.distanceMetric)}</strong>
+        </div>
+      </div>
+      <div class="result-summary">
+        <p><strong>Closest:</strong> ${solution.closestPairs.map(formatPair).join(', ')}</p>
+        <p><strong>Furthest:</strong> ${solution.furthestPairs.map(formatPair).join(', ')}</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Pair</th>
+              <th scope="col">Distance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${solution.distances.map((pair) => html`
+              <tr>
+                <td>${escapeHtml(pair.first)} - ${escapeHtml(pair.second)}</td>
+                <td>${pair.distance.toFixed(6)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="thinking-block">
+        <h4>Explanation and thinking</h4>
+        ${solution.explanation.map((item) => `<p>${escapeHtml(item)}</p>`).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function formatPair(pair: { first: string; second: string; distance: number }): string {
+  return `${escapeHtml(pair.first)}-${escapeHtml(pair.second)} (${pair.distance.toFixed(6)})`;
+}
+
+function renderExample(title: string, body: string, steps?: string[]): string {
+  return html`
+    <div class="worked-example">
+      <h4>${escapeHtml(title)}</h4>
+      <p>${escapeHtml(body)}</p>
+      ${steps ? `<ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>` : ''}
+    </div>
+  `;
+}
+
+function renderSolutionSteps(steps: string[]): string {
+  return html`
+    <div class="solution-box">
+      <h4>Worked answer</h4>
+      <ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>
+    </div>
+  `;
+}
+
+function renderNotebookLinks(files: string[]): string {
+  return html`
+    <div class="notebook-links" aria-label="Runnable notebook files">
+      ${files.map((file) => `<a href="/${escapeHtml(file)}" download>${escapeHtml(file.split('/').at(-1) ?? file)}</a>`).join('')}
+    </div>
   `;
 }
 
@@ -191,7 +289,7 @@ function renderRepositoryGuide(exercise?: Exercise): string {
         Course content lives as typed data under <code>src/course</code>. Add each new exercise as its own file,
         then register it in the week index so the website can navigate to it.
       </p>
-      ${exercise ? `<div class="file-list">${exercise.starterFiles.map((file) => `<code>${escapeHtml(file)}</code>`).join('')}</div>` : ''}
+      ${exercise ? `<div class="file-list">${exercise.starterFiles.map((file) => `<a href="/${escapeHtml(file)}" download>${escapeHtml(file)}</a>`).join('')}</div>` : ''}
     </section>
   `;
 }

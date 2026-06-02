@@ -9,6 +9,8 @@ const contentTypes = new Map([
   ['.js', 'text/javascript; charset=utf-8'],
   ['.css', 'text/css; charset=utf-8'],
   ['.map', 'application/json; charset=utf-8'],
+  ['.ipynb', 'application/x-ipynb+json; charset=utf-8'],
+  ['.md', 'text/markdown; charset=utf-8'],
 ]);
 
 createServer(async (request, response) => {
