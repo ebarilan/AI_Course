@@ -11,6 +11,7 @@ const contentTypes = new Map([
   ['.map', 'application/json; charset=utf-8'],
   ['.ipynb', 'application/x-ipynb+json; charset=utf-8'],
   ['.md', 'text/markdown; charset=utf-8'],
+  ['.pdf', 'application/pdf'],
 ]);
 
 createServer(async (request, response) => {

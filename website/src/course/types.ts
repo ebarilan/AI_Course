@@ -1,9 +1,23 @@
+export type MatrixDisplay = {
+  label: string;
+  rows: string[][];
+};
+
+export type SolutionBlock = {
+  heading: string;
+  text?: string;
+  equations?: string[];
+  matrices?: MatrixDisplay[];
+  steps?: string[];
+};
+
 export type ExercisePart = {
   title: string;
   summary: string;
   tasks: string[];
   notes?: string[];
   solutionSteps?: string[];
+  solutionBlocks?: SolutionBlock[];
   notebookFiles?: string[];
   examples?: {
     title: string;
@@ -39,6 +53,7 @@ export type Exercise = {
   aiPolicy: string;
   objective: string;
   parts: ExercisePart[];
+  originalExerciseFile?: string;
   deliverables: string[];
   starterFiles: string[];
   chatLogGuidance: string[];

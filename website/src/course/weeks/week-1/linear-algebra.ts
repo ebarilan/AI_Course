@@ -34,14 +34,56 @@ export const linearAlgebraExercise: Exercise = {
         'Show enough intermediate work to make the solution easy to follow.',
       ],
       notes: ['The verified solution is x1 = 1, x2 = 2, and x3 = 3.'],
-      solutionSteps: [
-        'Matrix form: A = [[1, 1, 1], [1, -1, 1], [1, 1, -1]], x = [[x1], [x2], [x3]], and b = [[6], [2], [0]].',
-        'The determinant of A is 4, so A is invertible and the inverse method is allowed.',
-        'A^-1 = [[0, 1/2, 1/2], [1/2, -1/2, 0], [1/2, 0, -1/2]].',
-        'Multiplying A^-1 @ b gives x = [[1], [2], [3]], so x1 = 1, x2 = 2, and x3 = 3.',
-        'Verification: 1 + 2 + 3 = 6, 1 - 2 + 3 = 2, and 1 + 2 - 3 = 0.',
+      solutionBlocks: [
+        {
+          heading: 'Write the system in matrix form',
+          text: 'The three equations can be written as A x = b.',
+          matrices: [
+            {
+              label: 'A',
+              rows: [
+                ['1', '1', '1'],
+                ['1', '-1', '1'],
+                ['1', '1', '-1'],
+              ],
+            },
+            {
+              label: 'x',
+              rows: [['x1'], ['x2'], ['x3']],
+            },
+            {
+              label: 'b',
+              rows: [['6'], ['2'], ['0']],
+            },
+          ],
+        },
+        {
+          heading: 'Use the inverse method',
+          text: 'The determinant of A is 4, so A is invertible.',
+          equations: ['x = A^-1 b'],
+          matrices: [
+            {
+              label: 'A^-1',
+              rows: [
+                ['0', '1/2', '1/2'],
+                ['1/2', '-1/2', '0'],
+                ['1/2', '0', '-1/2'],
+              ],
+            },
+          ],
+        },
+        {
+          heading: 'Compute the answer',
+          equations: ['x = A^-1 b = [1, 2, 3]^T'],
+          text: 'Therefore x1 = 1, x2 = 2, and x3 = 3.',
+          steps: [
+            'Check equation 1: 1 + 2 + 3 = 6.',
+            'Check equation 2: 1 - 2 + 3 = 2.',
+            'Check equation 3: 1 + 2 - 3 = 0.',
+          ],
+        },
       ],
-      notebookFiles: ['weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb'],
+      notebookFiles: ['course/weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb'],
     },
     {
       title: 'Part 3 - Linearity of Matrix Multiplication',
@@ -78,10 +120,21 @@ export const linearAlgebraExercise: Exercise = {
       notes: [
         'This part is a written/static explanation only. No notebook is required for the linearity proof.',
       ],
-      solutionSteps: [
-        'Additivity: T(u + v) = A @ (u + v) = A @ u + A @ v = T(u) + T(v).',
-        'Homogeneity: T(cu) = A @ (cu) = c(A @ u) = cT(u).',
-        'Because multiplying by a fixed matrix satisfies both conditions, T(x) = A @ x is a linear operation.',
+      solutionBlocks: [
+        {
+          heading: 'Define the transformation',
+          text: 'Let A be a fixed matrix and define T(x) = A x. To prove T is linear, we check additivity and homogeneity.',
+        },
+        {
+          heading: 'Additivity',
+          equations: ['T(u + v) = A(u + v)', 'A(u + v) = Au + Av', 'Au + Av = T(u) + T(v)'],
+          text: 'So T(u + v) = T(u) + T(v).',
+        },
+        {
+          heading: 'Homogeneity',
+          equations: ['T(cu) = A(cu)', 'A(cu) = c(Au)', 'c(Au) = cT(u)'],
+          text: 'So T(cu) = cT(u). Because both properties hold, matrix multiplication by a fixed matrix is linear.',
+        },
       ],
     },
     {
@@ -98,13 +151,73 @@ export const linearAlgebraExercise: Exercise = {
       notes: [
         'Convention: coefficients are ordered as [1, x, x^2, x^3, x^4]^T. So D maps [a0, a1, a2, a3, a4]^T to [a1, 2a2, 3a3, 4a4, 0]^T.',
       ],
-      solutionSteps: [
-        'D = [[0, 1, 0, 0, 0], [0, 0, 2, 0, 0], [0, 0, 0, 3, 0], [0, 0, 0, 0, 4], [0, 0, 0, 0, 0]] and p = [[1], [1], [1], [1], [1]].',
-        '1. D @ p is kosher: the shapes are 5x5 times 5x1. The result is [[1], [2], [3], [4], [0]].',
-        '2. p.T @ D is kosher: the shapes are 1x5 times 5x5. The result is [[0, 1, 2, 3, 4]].',
-        '3. D @ D is kosher: the shapes are 5x5 times 5x5. It represents the second derivative matrix, D^2 = [[0, 0, 2, 0, 0], [0, 0, 0, 6, 0], [0, 0, 0, 0, 12], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]].',
-        '4. p.T @ D @ p is kosher and equals 10. Meaning: p represents q(x) = 1 + x + x^2 + x^3 + x^4, and p.T @ D @ p is the sum of the coefficients of q\'(x), which equals q\'(1) = 10.',
-        '5. General case: for an n x 1 all-ones vector, p.T @ D @ p = 1 + 2 + ... + (n - 1) = n(n - 1)/2.',
+      solutionBlocks: [
+        {
+          heading: 'Set up D and p',
+          text: 'The coefficient vector p represents q(x) = 1 + x + x^2 + x^3 + x^4.',
+          matrices: [
+            {
+              label: 'D',
+              rows: [
+                ['0', '1', '0', '0', '0'],
+                ['0', '0', '2', '0', '0'],
+                ['0', '0', '0', '3', '0'],
+                ['0', '0', '0', '0', '4'],
+                ['0', '0', '0', '0', '0'],
+              ],
+            },
+            {
+              label: 'p',
+              rows: [['1'], ['1'], ['1'], ['1'], ['1']],
+            },
+          ],
+        },
+        {
+          heading: 'Compute D p',
+          text: 'The product is defined because the shapes are 5 x 5 and 5 x 1.',
+          matrices: [
+            {
+              label: 'D p',
+              rows: [['1'], ['2'], ['3'], ['4'], ['0']],
+            },
+          ],
+        },
+        {
+          heading: 'Compute p^T D',
+          text: 'The product is defined because the shapes are 1 x 5 and 5 x 5.',
+          matrices: [
+            {
+              label: 'p^T D',
+              rows: [['0', '1', '2', '3', '4']],
+            },
+          ],
+        },
+        {
+          heading: 'Compute D squared',
+          text: 'D^2 is defined and represents the second derivative matrix.',
+          matrices: [
+            {
+              label: 'D^2',
+              rows: [
+                ['0', '0', '2', '0', '0'],
+                ['0', '0', '0', '6', '0'],
+                ['0', '0', '0', '0', '12'],
+                ['0', '0', '0', '0', '0'],
+                ['0', '0', '0', '0', '0'],
+              ],
+            },
+          ],
+        },
+        {
+          heading: 'Interpret p^T D p',
+          equations: ['p^T D p = 1 + 2 + 3 + 4 = 10'],
+          text: "This equals the sum of the coefficients of q'(x). Since q'(x) = 1 + 2x + 3x^2 + 4x^3, that sum is q'(1) = 10.",
+        },
+        {
+          heading: 'General case',
+          equations: ['p^T D p = 1 + 2 + ... + (n - 1)', 'p^T D p = n(n - 1) / 2'],
+          text: 'For an n x 1 all-ones vector, the derivative coefficients are 1 through n - 1, so the expression is their sum.',
+        },
       ],
     },
   ],
@@ -115,11 +228,12 @@ export const linearAlgebraExercise: Exercise = {
     'Derivative matrix computations and interpretation.',
     'Chat logs that include prompts used with AI tools.',
   ],
+  originalExerciseFile: 'course/weeks/week-1/exercise-1-linear-algebra/original-exercise.pdf',
   starterFiles: [
-    'weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
-    'weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb',
-    'weeks/week-1/exercise-1-linear-algebra/solution.md',
-    'weeks/week-1/exercise-1-linear-algebra/chat-log.md',
+    'course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+    'course/weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb',
+    'course/weeks/week-1/exercise-1-linear-algebra/solution.md',
+    'course/weeks/week-1/exercise-1-linear-algebra/chat-log.md',
   ],
   chatLogGuidance: [
     'Copy every prompt that helped with the exercise.',
@@ -128,9 +242,9 @@ export const linearAlgebraExercise: Exercise = {
   ],
   solution: {
     title: 'Part 1 Solution - Word Embeddings',
-    notebookPath: 'weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+    notebookPath: 'course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
     notebookRunUrl:
-      'https://colab.research.google.com/github/ebarilan/AI_Course/blob/main/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+      'https://colab.research.google.com/github/ebarilan/AI_Course/blob/main/course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
     modelName: 'glove-wiki-gigaword-50',
     distanceMetric: 'Euclidean distance',
     dimensionality: 50,
