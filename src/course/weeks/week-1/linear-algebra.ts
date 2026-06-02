@@ -129,6 +129,8 @@ export const linearAlgebraExercise: Exercise = {
   solution: {
     title: 'Part 1 Solution - Word Embeddings',
     notebookPath: 'weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+    notebookRunUrl:
+      'https://colab.research.google.com/github/ebarilan/AI_Course/blob/main/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
     modelName: 'glove-wiki-gigaword-50',
     distanceMetric: 'Euclidean distance',
     dimensionality: 50,

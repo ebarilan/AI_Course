@@ -177,12 +177,13 @@ function renderSolutionPanel(exercise: Exercise): string {
         </div>
       </div>
       <div class="solution-actions">
-        <a class="primary-action" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
+        ${solution.notebookRunUrl ? `<a class="primary-action" href="${escapeHtml(solution.notebookRunUrl)}" target="_blank" rel="noreferrer">Run notebook in Colab</a>` : ''}
+        <a class="${solution.notebookRunUrl ? 'secondary-action' : 'primary-action'}" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
         <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">View notebook file</a>
       </div>
       <p class="run-note">
-        To run it, download the notebook from this page and open it in Jupyter, VS Code, or Google Colab.
-        The first execution may download the pre-trained model.
+        Click <strong>Run notebook in Colab</strong> to execute it directly from this site.
+        The first execution may install dependencies and download the pre-trained model.
       </p>
       <div class="answer-grid">
         <div>

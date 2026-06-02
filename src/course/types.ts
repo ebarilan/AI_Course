@@ -21,6 +21,7 @@ export type SolutionPairDistance = {
 export type ExerciseSolution = {
   title: string;
   notebookPath: string;
+  notebookRunUrl?: string;
   modelName: string;
   distanceMetric: string;
   dimensionality: number;
