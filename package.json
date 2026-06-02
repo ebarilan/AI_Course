@@ -1,0 +1,12 @@
+{
+  "name": "ai-course-exercises",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node scripts/copy-static.mjs",
+    "dev": "node scripts/dev-server.mjs",
+    "preview": "node scripts/dev-server.mjs dist 4173"
+  },
+  "devDependencies": {}
+}
