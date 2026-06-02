@@ -4,11 +4,45 @@ Use this file for the written parts of the submission.
 
 ## Part 1 - Word Embeddings
 
-- Model/library used:
-- Vector dimensionality:
-- Distance metric:
-- Closest pairs:
-- Furthest pairs:
+- Model/library used: `gensim.downloader` with `glove-wiki-gigaword-50`
+- Vector dimensionality: `50` for each word vector
+- Distance metric: Euclidean distance
+- Words checked: `king`, `queen`, `dog`, `cat`, `coffee`
+
+Pairwise distances, sorted from closest to furthest:
+
+| Pair | Distance |
+| --- | ---: |
+| dog-cat | 1.884603 |
+| king-queen | 3.477756 |
+| queen-cat | 4.968586 |
+| dog-coffee | 5.369360 |
+| queen-dog | 5.370511 |
+| cat-coffee | 5.472542 |
+| king-cat | 5.478320 |
+| king-dog | 5.891150 |
+| king-coffee | 6.544825 |
+| queen-coffee | 6.653850 |
+
+Closest pairs:
+
+1. `dog` and `cat`, distance `1.884603`
+2. `king` and `queen`, distance `3.477756`
+
+Furthest pairs:
+
+1. `queen` and `coffee`, distance `6.653850`
+2. `king` and `coffee`, distance `6.544825`
+
+Explanation and thinking:
+
+The result makes sense because embeddings are learned from word usage patterns.
+`dog` and `cat` are close because both are common animals and household pets, so
+they appear in similar text contexts. `king` and `queen` are also close because
+they share royalty and monarchy contexts. `coffee` is far from `queen` and
+`king` because it belongs to a drink/food context, not a human royalty context.
+The important idea is that the notebook compares learned numeric vectors, not
+dictionary definitions.
 
 ## Part 2 - Solving a Linear System
 
