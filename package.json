@@ -8,5 +8,7 @@
     "dev": "node scripts/dev-server.mjs",
     "preview": "node scripts/dev-server.mjs dist 4173"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
 }
