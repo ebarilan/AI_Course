@@ -236,7 +236,6 @@ function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
         ${exercise.parts.map((part, index) => renderExercisePart(part, index)).join('')}
       </section>
       ${renderChecklist('Submission checklist', exercise.deliverables)}
-      ${renderChecklist('AI chat log checklist', exercise.chatLogGuidance)}
       ${renderFileResources(exercise)}
     </article>
   `;

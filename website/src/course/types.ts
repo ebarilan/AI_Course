@@ -56,7 +56,6 @@ export type Exercise = {
   originalExerciseFile?: string;
   deliverables: string[];
   starterFiles: string[];
-  chatLogGuidance: string[];
   solution?: ExerciseSolution;
 };
 

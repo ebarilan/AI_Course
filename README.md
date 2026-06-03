@@ -11,10 +11,8 @@ course/
       exercise-1-linear-algebra/
         original-exercise.pdf
         README.md
-        notebook.ipynb
-        part-2-linear-system.ipynb
+        part_1_notbook.ipynb
         solution.md
-        chat-log.md
 website/
   public/
   scripts/
@@ -28,7 +26,7 @@ website/
 
 - `course/weeks/week-1/exercise-1-linear-algebra/original-exercise.pdf` is the original assignment.
 - `course/weeks/week-1/exercise-1-linear-algebra/README.md` explains the exercise folder.
-- Notebooks, written solutions, and AI chat logs stay beside the exercise they belong to.
+- Notebooks and written solutions stay beside the exercise they belong to.
 
 ## Run locally
 
@@ -60,4 +58,4 @@ Update `website/src/siteConfig.ts` with the owner name that should appear in the
 1. Create the exercise artifacts under `course/weeks/<week-slug>/<exercise-slug>/`.
 2. Export the exercise as an `Exercise` object.
 3. Register it in `website/src/course/weeks.ts`.
-4. Keep the original assignment PDF, notebooks, solution, and chat log inside the same exercise folder.
+4. Keep the original assignment PDF, notebooks, and solution inside the same exercise folder.

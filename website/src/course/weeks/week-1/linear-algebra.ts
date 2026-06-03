@@ -6,7 +6,7 @@ export const linearAlgebraExercise: Exercise = {
   subtitle: 'Word embeddings, systems of equations, linearity, and derivative matrices.',
   deadline: 'Monday, June 8',
   aiPolicy:
-    'AI models such as ChatGPT, Claude, Copilot, and friends are encouraged. Include chat logs and prompts in the submission.',
+    'AI models such as ChatGPT, Claude, Copilot, and friends are encouraged. Verify the final answers manually or with code.',
   objective:
     'Practice core linear algebra ideas by combining small Python experiments with written mathematical explanations.',
   parts: [
@@ -83,7 +83,6 @@ export const linearAlgebraExercise: Exercise = {
           ],
         },
       ],
-      notebookFiles: ['course/weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb'],
     },
     {
       title: 'Part 3 - Linearity of Matrix Multiplication',
@@ -226,25 +225,17 @@ export const linearAlgebraExercise: Exercise = {
     'Written matrix form and solution for the linear system.',
     'Static written proof of linearity with numeric examples for additivity and homogeneity.',
     'Derivative matrix computations and interpretation.',
-    'Chat logs that include prompts used with AI tools.',
   ],
   originalExerciseFile: 'course/weeks/week-1/exercise-1-linear-algebra/original-exercise.pdf',
   starterFiles: [
-    'course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
-    'course/weeks/week-1/exercise-1-linear-algebra/part-2-linear-system.ipynb',
+    'course/weeks/week-1/exercise-1-linear-algebra/part_1_notbook.ipynb',
     'course/weeks/week-1/exercise-1-linear-algebra/solution.md',
-    'course/weeks/week-1/exercise-1-linear-algebra/chat-log.md',
-  ],
-  chatLogGuidance: [
-    'Copy every prompt that helped with the exercise.',
-    'Summarize the useful answer in your own words.',
-    'Mention what you verified manually or with code.',
   ],
   solution: {
     title: 'Part 1 Solution - Word Embeddings',
-    notebookPath: 'course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+    notebookPath: 'course/weeks/week-1/exercise-1-linear-algebra/part_1_notbook.ipynb',
     notebookRunUrl:
-      'https://colab.research.google.com/github/ebarilan/AI_Course/blob/main/course/weeks/week-1/exercise-1-linear-algebra/notebook.ipynb',
+      'https://colab.research.google.com/github/ebarilan/AI_Course/blob/main/course/weeks/week-1/exercise-1-linear-algebra/part_1_notbook.ipynb',
     modelName: 'glove-wiki-gigaword-50',
     distanceMetric: 'Euclidean distance',
     dimensionality: 50,

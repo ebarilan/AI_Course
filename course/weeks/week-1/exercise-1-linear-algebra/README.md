@@ -5,10 +5,8 @@ Use this folder for the files needed to understand, solve, and submit the exerci
 ## Files
 
 - `original-exercise.pdf` - The original assignment PDF.
-- `notebook.ipynb` - Python notebook for word embeddings and distance calculations.
-- `part-2-linear-system.ipynb` - Small notebook for the linear system solution.
+- `part_1_notbook.ipynb` - Python notebook for word embeddings and distance calculations.
 - `solution.md` - Written answers for matrix form, linearity, derivative matrix calculations, and interpretations.
-- `chat-log.md` - AI prompts, useful responses summarized in your own words, and verification notes.
 
 ## Exercise summary
 
