@@ -224,10 +224,167 @@ matrix multiplication of the form `T(x) = A @ x` is a linear operation.
 
 ## Part 4 - Polynomial Derivative Matrix
 
-State the coefficient ordering convention first, then evaluate:
+Use the coefficient ordering:
 
-1. `D @ p`
-2. `p.T @ D`
-3. `D @ D`
-4. `p.T @ D @ p`
-5. General case for `p.T @ D @ p`
+```text
+[1, x, x^2, x^3, x^4]^T
+```
+
+So a polynomial coefficient vector
+
+```text
+[a0, a1, a2, a3, a4]^T
+```
+
+represents:
+
+```text
+a0 + a1*x + a2*x^2 + a3*x^3 + a4*x^4
+```
+
+The derivative matrix is:
+
+```text
+D = [[0, 1, 0, 0, 0],
+     [0, 0, 2, 0, 0],
+     [0, 0, 0, 3, 0],
+     [0, 0, 0, 0, 4],
+     [0, 0, 0, 0, 0]]
+```
+
+and
+
+```text
+p = [[1],
+     [1],
+     [1],
+     [1],
+     [1]]
+```
+
+This means `p` represents:
+
+```text
+q(x) = 1 + x + x^2 + x^3 + x^4
+```
+
+### 1. `D @ p`
+
+This is kosher because the shapes are:
+
+```text
+(5 x 5) @ (5 x 1) = (5 x 1)
+```
+
+Compute:
+
+```text
+D @ p = [[1],
+         [2],
+         [3],
+         [4],
+         [0]]
+```
+
+This is the coefficient vector of:
+
+```text
+q'(x) = 1 + 2x + 3x^2 + 4x^3
+```
+
+### 2. `p.T @ D`
+
+This is kosher because the shapes are:
+
+```text
+(1 x 5) @ (5 x 5) = (1 x 5)
+```
+
+Compute:
+
+```text
+p.T @ D = [[0, 1, 2, 3, 4]]
+```
+
+### 3. `D @ D`
+
+This is kosher because the shapes are:
+
+```text
+(5 x 5) @ (5 x 5) = (5 x 5)
+```
+
+It represents applying the derivative twice, so it is the second derivative
+matrix:
+
+```text
+D^2 = [[0, 0, 2, 0, 0],
+       [0, 0, 0, 6, 0],
+       [0, 0, 0, 0, 12],
+       [0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0]]
+```
+
+### 4. `p.T @ D @ p`
+
+This is kosher. The multiplication can be grouped as:
+
+```text
+p.T @ (D @ p)
+```
+
+We already computed:
+
+```text
+D @ p = [[1],
+         [2],
+         [3],
+         [4],
+         [0]]
+```
+
+So:
+
+```text
+p.T @ D @ p = [1, 1, 1, 1, 1] @ [[1],
+                                  [2],
+                                  [3],
+                                  [4],
+                                  [0]]
+
+p.T @ D @ p = 1 + 2 + 3 + 4 + 0 = 10
+```
+
+Meaning:
+
+`D @ p` gives the coefficients of `q'(x)`. Multiplying by `p.T`, which is all
+ones, sums those coefficients. The sum of the coefficients of a polynomial is
+the value of the polynomial at `x = 1`.
+
+So:
+
+```text
+p.T @ D @ p = q'(1) = 10
+```
+
+### 5. General case
+
+For an `n x 1` all-ones vector `p`, the polynomial is:
+
+```text
+q(x) = 1 + x + x^2 + ... + x^(n - 1)
+```
+
+Its derivative is:
+
+```text
+q'(x) = 1 + 2x + 3x^2 + ... + (n - 1)x^(n - 2)
+```
+
+Therefore:
+
+```text
+p.T @ D @ p = q'(1)
+            = 1 + 2 + 3 + ... + (n - 1)
+            = n(n - 1) / 2
+```
