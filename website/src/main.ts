@@ -4,8 +4,7 @@ import type { CourseWeek, Exercise, ExercisePart, MatrixDisplay, SolutionBlock }
 
 type Route =
   | { kind: 'week'; weekSlug: string }
-  | { kind: 'exercise'; weekSlug: string; exerciseId: string; partIndex?: number }
-  | { kind: 'solution'; weekSlug: string; exerciseId: string; partIndex?: number };
+  | { kind: 'exercise'; weekSlug: string; exerciseId: string; partIndex?: number };
 
 const discoveredRoot = document.getElementById('root');
 if (!discoveredRoot) {
@@ -34,29 +33,26 @@ function routeForExercise(week: CourseWeek, exercise: Exercise): string {
   return `#/week/${week.slug}/exercise/${exercise.id}`;
 }
 
-function routeForSolution(week: CourseWeek, exercise: Exercise): string {
-  return `#/week/${week.slug}/exercise/${exercise.id}/solution`;
-}
-
-function routeForSolutionPart(week: CourseWeek, exercise: Exercise, partIndex: number): string {
-  return `${routeForSolution(week, exercise)}/part/${partIndex + 1}`;
+function routeForExercisePart(week: CourseWeek, exercise: Exercise, partIndex: number): string {
+  return `${routeForExercise(week, exercise)}/part/${partIndex + 1}`;
 }
 
 function parseRoute(): Route {
   const fallbackWeek = courseWeeks[0]?.slug ?? 'week-1';
   const parts = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  const [, weekSlug = fallbackWeek, section, exerciseId, solutionSegment, partSegment, partNumber] = parts;
+  const [, weekSlug = fallbackWeek, section, exerciseId, maybePartOrSolution, maybePartNumberOrPart, maybeLegacyPartNumber] = parts;
   const weekExists = courseWeeks.some((week) => week.slug === weekSlug);
   const safeWeekSlug = weekExists ? weekSlug : fallbackWeek;
-  const parsedPartIndex = partSegment === 'part' && partNumber ? Number(partNumber) - 1 : undefined;
+  const partNumber = maybePartOrSolution === 'solution' ? maybeLegacyPartNumber : maybePartNumberOrPart;
+  const parsedPartIndex = (maybePartOrSolution === 'part' || maybePartNumberOrPart === 'part') && partNumber
+    ? Number(partNumber) - 1
+    : undefined;
   const partIndex = parsedPartIndex !== undefined && Number.isInteger(parsedPartIndex) && parsedPartIndex >= 0
     ? parsedPartIndex
     : undefined;
 
   if (section === 'exercise' && exerciseId) {
-    return solutionSegment === 'solution'
-      ? { kind: 'solution', weekSlug: safeWeekSlug, exerciseId, partIndex }
-      : { kind: 'exercise', weekSlug: safeWeekSlug, exerciseId, partIndex };
+    return { kind: 'exercise', weekSlug: safeWeekSlug, exerciseId, partIndex };
   }
 
   return { kind: 'week', weekSlug: safeWeekSlug };
@@ -93,19 +89,15 @@ function render(): void {
 }
 
 function renderRouteContent(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
-  if (route.kind === 'solution' && exercise) {
-    return exercise.solution ? renderSolutionPage(week, exercise) : renderNoSolutionPage(week, exercise);
-  }
-
   if (route.kind === 'exercise' && exercise) {
-    return renderExercisePage(week, exercise);
+    return exercise.solution ? renderExercisePage(week, exercise) : renderExerciseUnavailablePage(week, exercise);
   }
 
   return renderWeekPage(week);
 }
 
 function renderHeader(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
-  const pageLabel = route.kind === 'solution' ? 'Solution page' : route.kind === 'exercise' ? 'Exercise page' : 'Week overview';
+  const pageLabel = route.kind === 'exercise' ? 'Exercise page' : 'Week overview';
   const nextLink = exercise ? routeForExercise(week, exercise) : routeForWeek(week);
 
   return html`
@@ -114,8 +106,8 @@ function renderHeader(week: CourseWeek, exercise: Exercise | undefined, route: R
         <p class="eyebrow">AI course workspace</p>
         <h1>${escapeHtml(siteConfig.siteTitle)}</h1>
         <p>
-          A structured learning site for weekly AI exercises. Each week has a clear overview,
-          each exercise has its own instruction page, and worked answers live on separate solution pages.
+          A structured learning site for weekly AI exercises. Each exercise keeps the question and solution
+          together in one focused workspace.
         </p>
         <div class="header-actions">
           <a href="${escapeHtml(routeForWeek(week))}" class="secondary-action">Week overview</a>
@@ -127,7 +119,6 @@ function renderHeader(week: CourseWeek, exercise: Exercise | undefined, route: R
         <ol>
           <li class="${route.kind === 'week' ? 'active' : ''}">Week</li>
           <li class="${route.kind === 'exercise' ? 'active' : ''}">Exercise</li>
-          <li class="${route.kind === 'solution' ? 'active' : ''}">Solution</li>
         </ol>
       </div>
     </header>
@@ -156,7 +147,6 @@ function renderWeekNavItem(week: CourseWeek, route: Route, selectedWeek: CourseW
         <div class="nav-subpages">
           ${week.exercises.map((exercise) => html`
             <a class="${route.kind === 'exercise' && route.exerciseId === exercise.id ? 'active' : ''}" href="${escapeHtml(routeForExercise(week, exercise))}">Exercise</a>
-            ${exercise.solution ? `<a class="${route.kind === 'solution' && route.exerciseId === exercise.id ? 'active' : ''}" href="${escapeHtml(routeForSolution(week, exercise))}">Solution</a>` : ''}
           `).join('')}
           ${isActiveWeek && selectedExercise ? renderPartNavigation(selectedWeek, selectedExercise, route) : ''}
         </div>
@@ -170,8 +160,8 @@ function renderPartNavigation(week: CourseWeek, exercise: Exercise, route: Route
     <div class="nav-parts" aria-label="Exercise parts">
       ${exercise.parts.map((part, index) => html`
         <a
-          class="${route.kind === 'solution' && route.exerciseId === exercise.id && getActivePartIndex(exercise, route) === index ? 'active' : ''}"
-          href="${escapeHtml(routeForSolutionPart(week, exercise, index))}"
+          class="${route.kind === 'exercise' && route.exerciseId === exercise.id && getActivePartIndex(exercise, route) === index ? 'active' : ''}"
+          href="${escapeHtml(routeForExercisePart(week, exercise, index))}"
         >
           <span>Part ${index + 1}</span>
           ${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}
@@ -197,7 +187,7 @@ function renderWeekPage(week: CourseWeek): string {
         <div class="path-grid">
           <div><span>1</span><strong>Read the exercise</strong><p>Start with the goal, required tasks, and submission checklist.</p></div>
           <div><span>2</span><strong>Work through each part</strong><p>Use the notebooks only where code is required, and write explanations in your own words.</p></div>
-          <div><span>3</span><strong>Compare with the solution</strong><p>Open the solution page after attempting the task, then verify your reasoning.</p></div>
+          <div><span>3</span><strong>Compare with the solution</strong><p>Open each part's solution box after attempting the task, then verify your reasoning.</p></div>
         </div>
       </section>
       ${week.exercises.length > 0 ? html`
@@ -221,68 +211,16 @@ function renderExerciseSummary(week: CourseWeek, exercise: Exercise): string {
       <dl class="compact-facts">
         <div><dt>Deadline</dt><dd>${escapeHtml(exercise.deadline)}</dd></div>
         <div><dt>Parts</dt><dd>${exercise.parts.length}</dd></div>
-        <div><dt>Solution</dt><dd>${exercise.solution ? 'Available' : 'Not yet'}</dd></div>
+        <div><dt>Workspace</dt><dd>${exercise.solution ? 'Ready' : 'Not yet'}</dd></div>
       </dl>
       <div class="summary-actions">
         <a href="${escapeHtml(routeForExercise(week, exercise))}" class="primary-action">Open exercise</a>
-        ${exercise.solution ? `<a href="${escapeHtml(routeForSolution(week, exercise))}" class="secondary-action">View solution</a>` : ''}
       </div>
     </article>
   `;
 }
 
 function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
-  return html`
-    <article class="page-panel">
-      <p class="eyebrow">Week ${week.weekNumber} / Exercise instructions</p>
-      <div class="page-title-row">
-        <div>
-          <h2>${escapeHtml(exercise.title)}</h2>
-          <p>${escapeHtml(exercise.subtitle)}</p>
-        </div>
-        <a href="${escapeHtml(routeForSolution(week, exercise))}" class="secondary-action ${exercise.solution ? '' : 'disabled'}">Solution page</a>
-      </div>
-      <section class="briefing-grid">
-        <div>
-          <span class="answer-label">Learning objective</span>
-          <p>${escapeHtml(exercise.objective)}</p>
-        </div>
-        <div>
-          <span class="answer-label">Deadline</span>
-          <p>${escapeHtml(exercise.deadline)}</p>
-        </div>
-        <div>
-          <span class="answer-label">AI use</span>
-          <p>${escapeHtml(exercise.aiPolicy)}</p>
-        </div>
-      </section>
-      <section class="parts-list">
-        <h3>Exercise parts</h3>
-        ${exercise.parts.map((part, index) => renderExercisePart(part, index)).join('')}
-      </section>
-      ${renderChecklist('Submission checklist', exercise.deliverables)}
-      ${renderFileResources(exercise)}
-    </article>
-  `;
-}
-
-function renderExercisePart(part: ExercisePart, index: number): string {
-  return html`
-    <section class="part-row">
-      <div class="part-marker">Part ${index + 1}</div>
-      <div>
-        <h4>${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}</h4>
-        <p>${escapeHtml(part.summary)}</p>
-        <ul>${part.tasks.map((task) => `<li>${escapeHtml(task)}</li>`).join('')}</ul>
-        ${(part.examples ?? []).map((example) => renderExample(example.title, example.body, example.steps)).join('')}
-        ${(part.notes ?? []).map((note) => `<p class="tiny-note">${escapeHtml(note)}</p>`).join('')}
-        ${part.notebookFiles ? renderNotebookLinks(part.notebookFiles) : ''}
-      </div>
-    </section>
-  `;
-}
-
-function renderSolutionPage(week: CourseWeek, exercise: Exercise): string {
   const solution = exercise.solution;
   if (!solution) {
     return '';
@@ -293,13 +231,13 @@ function renderSolutionPage(week: CourseWeek, exercise: Exercise): string {
 
   return html`
     <article class="page-panel">
-      <p class="eyebrow">Week ${week.weekNumber} / Part workspace</p>
+      <p class="eyebrow">Week ${week.weekNumber} / Exercise workspace</p>
       <div class="page-title-row">
         <div>
           <h2>${escapeHtml(activePart.title)}</h2>
-          <p>Open the question when you want to work, then open the solution when you are ready to compare your answer.</p>
+          <p>The solution is open by default. Open the question box when you want to review the prompt.</p>
         </div>
-        <a href="${escapeHtml(routeForExercise(week, exercise))}" class="secondary-action">Back to exercise</a>
+        <a href="${escapeHtml(routeForWeek(week))}" class="secondary-action">Back to week</a>
       </div>
       ${renderPartSwitcher(week, exercise, activePartIndex)}
       ${renderPartWorkspace(activePart, activePartIndex, solution)}
@@ -308,7 +246,7 @@ function renderSolutionPage(week: CourseWeek, exercise: Exercise): string {
 }
 
 function getActivePartIndex(exercise: Exercise, route: Route): number {
-  if (route.kind !== 'solution' || route.partIndex === undefined) {
+  if (route.kind !== 'exercise' || route.partIndex === undefined) {
     return 0;
   }
   return Math.min(route.partIndex, exercise.parts.length - 1);
@@ -318,7 +256,7 @@ function renderPartSwitcher(week: CourseWeek, exercise: Exercise, activePartInde
   return html`
     <nav class="part-switcher" aria-label="Part navigation">
       ${exercise.parts.map((part, index) => html`
-        <a class="${activePartIndex === index ? 'active' : ''}" href="${escapeHtml(routeForSolutionPart(week, exercise, index))}">
+        <a class="${activePartIndex === index ? 'active' : ''}" href="${escapeHtml(routeForExercisePart(week, exercise, index))}">
           <span>Part ${index + 1}</span>
           ${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}
         </a>
@@ -330,7 +268,7 @@ function renderPartSwitcher(week: CourseWeek, exercise: Exercise, activePartInde
 function renderPartWorkspace(part: ExercisePart, partIndex: number, solution: NonNullable<Exercise['solution']>): string {
   return html`
     <section class="part-workspace">
-      <details class="accordion-box" open>
+      <details class="accordion-box">
         <summary>
           <span>Question</span>
           <strong>${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}</strong>
@@ -339,7 +277,7 @@ function renderPartWorkspace(part: ExercisePart, partIndex: number, solution: No
           ${renderPartQuestionContent(part)}
         </div>
       </details>
-      <details class="accordion-box" ${partIndex === 0 ? 'open' : ''}>
+      <details class="accordion-box" open>
         <summary>
           <span>Solution</span>
           <strong>${escapeHtml(getPartSolutionTitle(part, partIndex))}</strong>
@@ -462,13 +400,13 @@ function renderDistanceTable(distances: { first: string; second: string; distanc
   `;
 }
 
-function renderNoSolutionPage(week: CourseWeek, exercise: Exercise): string {
+function renderExerciseUnavailablePage(week: CourseWeek, exercise: Exercise): string {
   return html`
     <article class="page-panel">
-      <p class="eyebrow">Week ${week.weekNumber} / Solution</p>
-      <h2>Solution is not available yet.</h2>
-      <p>Return to the exercise page and complete the assignment using the instructions and resource files.</p>
-      <a href="${escapeHtml(routeForExercise(week, exercise))}" class="primary-action">Back to exercise</a>
+      <p class="eyebrow">Week ${week.weekNumber} / Exercise</p>
+      <h2>Exercise workspace is not available yet.</h2>
+      <p>The exercise exists, but the interactive question and solution workspace has not been published yet.</p>
+      <a href="${escapeHtml(routeForWeek(week))}" class="primary-action">Back to week</a>
     </article>
   `;
 }
@@ -521,7 +459,7 @@ function renderComingSoon(): string {
   return html`
     <section class="empty-week">
       <h3>No exercise published yet</h3>
-      <p>This week is reserved for future course material. When an exercise is added, it will appear here with separate instruction and solution pages.</p>
+      <p>This week is reserved for future course material. When an exercise is added, it will appear here as one workspace with question and solution boxes.</p>
     </section>
   `;
 }
@@ -533,12 +471,12 @@ function renderAboutSection(): string {
       <h2>Built as an education-first AI course portfolio.</h2>
       <p>
         The site is organized around student workflow: choose a week, open one exercise, complete the tasks,
-        then review the solution separately. New weeks can be added without changing the learning structure.
+        then review the solution in the same workspace. New weeks can be added without changing the learning structure.
       </p>
       <div class="about-tags">
         <span>Weekly modules</span>
         <span>Exercise pages</span>
-        <span>Separate solutions</span>
+        <span>Question and solution boxes</span>
         <span>AI prompts documented</span>
       </div>
     </section>
