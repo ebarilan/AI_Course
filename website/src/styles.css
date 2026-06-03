@@ -213,6 +213,27 @@ p { color: #4b5563; }
   background: #e8f0f4;
 }
 
+.nav-parts {
+  border-top: 1px solid #d9dee8;
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.nav-parts a {
+  display: grid;
+  gap: 2px;
+  padding-left: 18px;
+}
+
+.nav-parts span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .content-stack {
   display: grid;
   gap: 22px;
@@ -344,6 +365,110 @@ p { color: #4b5563; }
 
 .summary-actions {
   grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.solution-actions.compact {
+  margin: 0 0 18px;
+}
+
+.compact-grid {
+  margin-top: 0;
+}
+
+.part-switcher {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 22px;
+}
+
+.part-switcher a {
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  color: #334155;
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  padding: 12px;
+  text-decoration: none;
+}
+
+.part-switcher a.active {
+  background: #183447;
+  border-color: #183447;
+  color: #ffffff;
+}
+
+.part-switcher span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.part-switcher a.active span {
+  color: #c8dce7;
+}
+
+.part-workspace {
+  display: grid;
+  gap: 14px;
+}
+
+.accordion-box {
+  background: #ffffff;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-box summary {
+  align-items: center;
+  background: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  list-style: none;
+  min-height: 62px;
+  padding: 14px 16px;
+}
+
+.accordion-box summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-box summary::after {
+  color: #315c72;
+  content: "+";
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.accordion-box[open] summary::after {
+  content: "-";
+}
+
+.accordion-box summary span {
+  color: #315c72;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.accordion-box summary strong {
+  color: #111827;
+  flex: 1;
+}
+
+.accordion-content {
+  padding: 18px;
+}
+
+.accordion-content > p:first-child {
   margin-top: 0;
 }
 
@@ -566,6 +691,7 @@ tr:last-child td { border-bottom: 0; }
   .layout-grid,
   .path-grid,
   .briefing-grid,
+  .part-switcher,
   .exercise-summary,
   .part-row {
     grid-template-columns: 1fr;

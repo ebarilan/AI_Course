@@ -4,8 +4,8 @@ import type { CourseWeek, Exercise, ExercisePart, MatrixDisplay, SolutionBlock }
 
 type Route =
   | { kind: 'week'; weekSlug: string }
-  | { kind: 'exercise'; weekSlug: string; exerciseId: string }
-  | { kind: 'solution'; weekSlug: string; exerciseId: string };
+  | { kind: 'exercise'; weekSlug: string; exerciseId: string; partIndex?: number }
+  | { kind: 'solution'; weekSlug: string; exerciseId: string; partIndex?: number };
 
 const discoveredRoot = document.getElementById('root');
 if (!discoveredRoot) {
@@ -38,17 +38,25 @@ function routeForSolution(week: CourseWeek, exercise: Exercise): string {
   return `#/week/${week.slug}/exercise/${exercise.id}/solution`;
 }
 
+function routeForSolutionPart(week: CourseWeek, exercise: Exercise, partIndex: number): string {
+  return `${routeForSolution(week, exercise)}/part/${partIndex + 1}`;
+}
+
 function parseRoute(): Route {
   const fallbackWeek = courseWeeks[0]?.slug ?? 'week-1';
   const parts = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  const [, weekSlug = fallbackWeek, section, exerciseId, solutionSegment] = parts;
+  const [, weekSlug = fallbackWeek, section, exerciseId, solutionSegment, partSegment, partNumber] = parts;
   const weekExists = courseWeeks.some((week) => week.slug === weekSlug);
   const safeWeekSlug = weekExists ? weekSlug : fallbackWeek;
+  const parsedPartIndex = partSegment === 'part' && partNumber ? Number(partNumber) - 1 : undefined;
+  const partIndex = parsedPartIndex !== undefined && Number.isInteger(parsedPartIndex) && parsedPartIndex >= 0
+    ? parsedPartIndex
+    : undefined;
 
   if (section === 'exercise' && exerciseId) {
     return solutionSegment === 'solution'
-      ? { kind: 'solution', weekSlug: safeWeekSlug, exerciseId }
-      : { kind: 'exercise', weekSlug: safeWeekSlug, exerciseId };
+      ? { kind: 'solution', weekSlug: safeWeekSlug, exerciseId, partIndex }
+      : { kind: 'exercise', weekSlug: safeWeekSlug, exerciseId, partIndex };
   }
 
   return { kind: 'week', weekSlug: safeWeekSlug };
@@ -74,7 +82,7 @@ function render(): void {
     <main class="app-shell">
       ${renderHeader(selectedWeek, selectedExercise, route)}
       <div class="layout-grid">
-        ${renderSidebar(route)}
+        ${renderSidebar(route, selectedWeek, selectedExercise)}
         <section class="content-stack" aria-live="polite">
           ${renderRouteContent(selectedWeek, selectedExercise, route)}
           ${renderAboutSection()}
@@ -126,16 +134,16 @@ function renderHeader(week: CourseWeek, exercise: Exercise | undefined, route: R
   `;
 }
 
-function renderSidebar(route: Route): string {
+function renderSidebar(route: Route, selectedWeek: CourseWeek, selectedExercise?: Exercise): string {
   return html`
     <aside class="week-nav" aria-label="Course navigation">
       <div class="nav-title">Course weeks</div>
-      ${courseWeeks.map((week) => renderWeekNavItem(week, route)).join('')}
+      ${courseWeeks.map((week) => renderWeekNavItem(week, route, selectedWeek, selectedExercise)).join('')}
     </aside>
   `;
 }
 
-function renderWeekNavItem(week: CourseWeek, route: Route): string {
+function renderWeekNavItem(week: CourseWeek, route: Route, selectedWeek: CourseWeek, selectedExercise?: Exercise): string {
   const isActiveWeek = week.slug === route.weekSlug;
   return html`
     <section class="nav-week ${isActiveWeek ? 'active' : ''}">
@@ -150,9 +158,26 @@ function renderWeekNavItem(week: CourseWeek, route: Route): string {
             <a class="${route.kind === 'exercise' && route.exerciseId === exercise.id ? 'active' : ''}" href="${escapeHtml(routeForExercise(week, exercise))}">Exercise</a>
             ${exercise.solution ? `<a class="${route.kind === 'solution' && route.exerciseId === exercise.id ? 'active' : ''}" href="${escapeHtml(routeForSolution(week, exercise))}">Solution</a>` : ''}
           `).join('')}
+          ${isActiveWeek && selectedExercise ? renderPartNavigation(selectedWeek, selectedExercise, route) : ''}
         </div>
       ` : ''}
     </section>
+  `;
+}
+
+function renderPartNavigation(week: CourseWeek, exercise: Exercise, route: Route): string {
+  return html`
+    <div class="nav-parts" aria-label="Exercise parts">
+      ${exercise.parts.map((part, index) => html`
+        <a
+          class="${route.kind === 'solution' && route.exerciseId === exercise.id && getActivePartIndex(exercise, route) === index ? 'active' : ''}"
+          href="${escapeHtml(routeForSolutionPart(week, exercise, index))}"
+        >
+          <span>Part ${index + 1}</span>
+          ${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}
+        </a>
+      `).join('')}
+    </div>
   `;
 }
 
@@ -262,57 +287,118 @@ function renderSolutionPage(week: CourseWeek, exercise: Exercise): string {
   if (!solution) {
     return '';
   }
+  const route = parseRoute();
+  const activePartIndex = getActivePartIndex(exercise, route);
+  const activePart = exercise.parts[activePartIndex];
 
   return html`
     <article class="page-panel">
-      <p class="eyebrow">Week ${week.weekNumber} / Worked solution</p>
+      <p class="eyebrow">Week ${week.weekNumber} / Part workspace</p>
       <div class="page-title-row">
         <div>
-          <h2>${escapeHtml(solution.title)}</h2>
-          <p>Use this page after attempting the exercise. It separates final answers from instructions so the course remains easy to study.</p>
+          <h2>${escapeHtml(activePart.title)}</h2>
+          <p>Open the question when you want to work, then open the solution when you are ready to compare your answer.</p>
         </div>
         <a href="${escapeHtml(routeForExercise(week, exercise))}" class="secondary-action">Back to exercise</a>
       </div>
-      <div class="solution-actions">
-        ${solution.notebookRunUrl ? `<a class="primary-action" href="${escapeHtml(solution.notebookRunUrl)}" target="_blank" rel="noreferrer">Run notebook in Colab</a>` : ''}
-        <a class="${solution.notebookRunUrl ? 'secondary-action' : 'primary-action'}" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
-        <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">View notebook file</a>
-      </div>
-      <section class="briefing-grid">
-        <div><span class="answer-label">Model</span><p>${escapeHtml(solution.modelName)}</p></div>
-        <div><span class="answer-label">Vector length</span><p>${solution.dimensionality}</p></div>
-        <div><span class="answer-label">Distance metric</span><p>${escapeHtml(solution.distanceMetric)}</p></div>
-      </section>
-      <section class="result-summary">
-        <h3>Key results</h3>
-        <p><strong>Closest:</strong> ${solution.closestPairs.map(formatPair).join(', ')}</p>
-        <p><strong>Furthest:</strong> ${solution.furthestPairs.map(formatPair).join(', ')}</p>
-      </section>
-      ${renderDistanceTable(solution.distances)}
-      ${renderAllWrittenSolutions(exercise)}
-      <section class="thinking-block">
-        <h3>Explanation</h3>
-        ${solution.explanation.map((item) => `<p>${escapeHtml(item)}</p>`).join('')}
-      </section>
+      ${renderPartSwitcher(week, exercise, activePartIndex)}
+      ${renderPartWorkspace(activePart, activePartIndex, solution)}
     </article>
   `;
 }
 
-function renderAllWrittenSolutions(exercise: Exercise): string {
-  const solvedParts = exercise.parts.filter((part) => part.solutionBlocks?.length || part.solutionSteps?.length);
-  if (solvedParts.length === 0) {
-    return '';
+function getActivePartIndex(exercise: Exercise, route: Route): number {
+  if (route.kind !== 'solution' || route.partIndex === undefined) {
+    return 0;
+  }
+  return Math.min(route.partIndex, exercise.parts.length - 1);
+}
+
+function renderPartSwitcher(week: CourseWeek, exercise: Exercise, activePartIndex: number): string {
+  return html`
+    <nav class="part-switcher" aria-label="Part navigation">
+      ${exercise.parts.map((part, index) => html`
+        <a class="${activePartIndex === index ? 'active' : ''}" href="${escapeHtml(routeForSolutionPart(week, exercise, index))}">
+          <span>Part ${index + 1}</span>
+          ${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}
+        </a>
+      `).join('')}
+    </nav>
+  `;
+}
+
+function renderPartWorkspace(part: ExercisePart, partIndex: number, solution: NonNullable<Exercise['solution']>): string {
+  return html`
+    <section class="part-workspace">
+      <details class="accordion-box" open>
+        <summary>
+          <span>Question</span>
+          <strong>${escapeHtml(part.title.replace(/^Part \d+ - /, ''))}</strong>
+        </summary>
+        <div class="accordion-content">
+          ${renderPartQuestionContent(part)}
+        </div>
+      </details>
+      <details class="accordion-box" ${partIndex === 0 ? 'open' : ''}>
+        <summary>
+          <span>Solution</span>
+          <strong>${escapeHtml(getPartSolutionTitle(part, partIndex))}</strong>
+        </summary>
+        <div class="accordion-content">
+          ${renderPartSolutionContent(part, partIndex, solution)}
+        </div>
+      </details>
+    </section>
+  `;
+}
+
+function renderPartQuestionContent(part: ExercisePart): string {
+  return html`
+    <p>${escapeHtml(part.summary)}</p>
+    <ul>${part.tasks.map((task) => `<li>${escapeHtml(task)}</li>`).join('')}</ul>
+    ${(part.examples ?? []).map((example) => renderExample(example.title, example.body, example.steps)).join('')}
+    ${(part.notes ?? []).map((note) => `<p class="tiny-note">${escapeHtml(note)}</p>`).join('')}
+    ${part.notebookFiles ? renderNotebookLinks(part.notebookFiles) : ''}
+  `;
+}
+
+function getPartSolutionTitle(part: ExercisePart, partIndex: number): string {
+  return partIndex === 0 ? 'Word embeddings results' : part.title.replace(/^Part \d+ - /, '');
+}
+
+function renderPartSolutionContent(part: ExercisePart, partIndex: number, solution: NonNullable<Exercise['solution']>): string {
+  if (partIndex === 0) {
+    return renderEmbeddingSolution(solution);
   }
 
+  if (part.solutionBlocks?.length) {
+    return part.solutionBlocks.map(renderSolutionBlock).join('');
+  }
+
+  return renderLegacySolutionSteps(part.solutionSteps);
+}
+
+function renderEmbeddingSolution(solution: NonNullable<Exercise['solution']>): string {
   return html`
-    <section class="written-solutions">
-      <h3>Written answers</h3>
-      ${solvedParts.map((part) => html`
-        <article class="solution-box">
-          <h4>${escapeHtml(part.title)}</h4>
-          ${part.solutionBlocks?.map(renderSolutionBlock).join('') ?? renderLegacySolutionSteps(part.solutionSteps)}
-        </article>
-      `).join('')}
+    <div class="solution-actions compact">
+      ${solution.notebookRunUrl ? `<a class="primary-action" href="${escapeHtml(solution.notebookRunUrl)}" target="_blank" rel="noreferrer">Run notebook in Colab</a>` : ''}
+      <a class="${solution.notebookRunUrl ? 'secondary-action' : 'primary-action'}" href="/${escapeHtml(solution.notebookPath)}" download>Download notebook</a>
+      <a class="secondary-action" href="/${escapeHtml(solution.notebookPath)}" target="_blank" rel="noreferrer">View notebook file</a>
+    </div>
+    <section class="briefing-grid compact-grid">
+      <div><span class="answer-label">Model</span><p>${escapeHtml(solution.modelName)}</p></div>
+      <div><span class="answer-label">Vector length</span><p>${solution.dimensionality}</p></div>
+      <div><span class="answer-label">Distance metric</span><p>${escapeHtml(solution.distanceMetric)}</p></div>
+    </section>
+    <section class="result-summary">
+      <h3>Key results</h3>
+      <p><strong>Closest:</strong> ${solution.closestPairs.map(formatPair).join(', ')}</p>
+      <p><strong>Furthest:</strong> ${solution.furthestPairs.map(formatPair).join(', ')}</p>
+    </section>
+    ${renderDistanceTable(solution.distances)}
+    <section class="thinking-block">
+      <h3>Explanation</h3>
+      ${solution.explanation.map((item) => `<p>${escapeHtml(item)}</p>`).join('')}
     </section>
   `;
 }
