@@ -1,5 +1,6 @@
 import type { CourseWeek } from './types.js';
 import { linearAlgebraExercise } from './weeks/week-1/linear-algebra.js';
+import { populationDynamicsExercise } from './weeks/week-2/population-dynamics.js';
 
 export const courseWeeks: CourseWeek[] = [
   {
@@ -13,9 +14,9 @@ export const courseWeeks: CourseWeek[] = [
   {
     weekNumber: 2,
     slug: 'week-2',
-    title: 'Coming Soon',
-    theme: 'A fresh set of AI puzzles will land here after the next class.',
-    status: 'planned',
-    exercises: [],
+    title: 'Population Dynamics',
+    theme: 'Matrix transitions, eigenvectors, and the long-term story of a lake.',
+    status: 'ready',
+    exercises: [populationDynamicsExercise],
   },
 ];

@@ -45,6 +45,13 @@ export type ExerciseSolution = {
   explanation: string[];
 };
 
+export type NotebookResource = {
+  title: string;
+  path: string;
+  runUrl?: string;
+  description?: string;
+};
+
 export type Exercise = {
   id: string;
   title: string;
@@ -56,6 +63,7 @@ export type Exercise = {
   originalExerciseFile?: string;
   deliverables: string[];
   starterFiles: string[];
+  notebook?: NotebookResource;
   solution?: ExerciseSolution;
 };
 

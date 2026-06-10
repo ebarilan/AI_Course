@@ -90,10 +90,18 @@ function render(): void {
 
 function renderRouteContent(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
   if (route.kind === 'exercise' && exercise) {
-    return exercise.solution ? renderExercisePage(week, exercise) : renderExerciseUnavailablePage(week, exercise);
+    return hasExerciseWorkspace(exercise) ? renderExercisePage(week, exercise) : renderExerciseUnavailablePage(week, exercise);
   }
 
   return renderWeekPage(week);
+}
+
+function hasExerciseWorkspace(exercise: Exercise): boolean {
+  return Boolean(
+    exercise.solution
+      || exercise.notebook
+      || exercise.parts.some((part) => part.solutionBlocks?.length || part.solutionSteps?.length),
+  );
 }
 
 function renderHeader(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
@@ -211,7 +219,7 @@ function renderExerciseSummary(week: CourseWeek, exercise: Exercise): string {
       <dl class="compact-facts">
         <div><dt>Deadline</dt><dd>${escapeHtml(exercise.deadline)}</dd></div>
         <div><dt>Parts</dt><dd>${exercise.parts.length}</dd></div>
-        <div><dt>Workspace</dt><dd>${exercise.solution ? 'Ready' : 'Not yet'}</dd></div>
+        <div><dt>Workspace</dt><dd>${hasExerciseWorkspace(exercise) ? 'Ready' : 'Not yet'}</dd></div>
       </dl>
       <div class="summary-actions">
         <a href="${escapeHtml(routeForExercise(week, exercise))}" class="primary-action">Open exercise</a>
@@ -221,10 +229,6 @@ function renderExerciseSummary(week: CourseWeek, exercise: Exercise): string {
 }
 
 function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
-  const solution = exercise.solution;
-  if (!solution) {
-    return '';
-  }
   const route = parseRoute();
   const activePartIndex = getActivePartIndex(exercise, route);
   const activePart = exercise.parts[activePartIndex];
@@ -240,7 +244,9 @@ function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
         <a href="${escapeHtml(routeForWeek(week))}" class="secondary-action">Back to week</a>
       </div>
       ${renderPartSwitcher(week, exercise, activePartIndex)}
-      ${renderPartWorkspace(activePart, activePartIndex, solution)}
+      ${exercise.notebook ? renderNotebookResource(exercise.notebook) : ''}
+      ${renderFileResources(exercise)}
+      ${renderPartWorkspace(activePart, activePartIndex, exercise)}
     </article>
   `;
 }
@@ -265,7 +271,7 @@ function renderPartSwitcher(week: CourseWeek, exercise: Exercise, activePartInde
   `;
 }
 
-function renderPartWorkspace(part: ExercisePart, partIndex: number, solution: NonNullable<Exercise['solution']>): string {
+function renderPartWorkspace(part: ExercisePart, partIndex: number, exercise: Exercise): string {
   return html`
     <section class="part-workspace">
       <details class="accordion-box">
@@ -283,7 +289,7 @@ function renderPartWorkspace(part: ExercisePart, partIndex: number, solution: No
           <strong>${escapeHtml(getPartSolutionTitle(part, partIndex))}</strong>
         </summary>
         <div class="accordion-content">
-          ${renderPartSolutionContent(part, partIndex, solution)}
+          ${renderPartSolutionContent(part, partIndex, exercise)}
         </div>
       </details>
     </section>
@@ -301,12 +307,14 @@ function renderPartQuestionContent(part: ExercisePart): string {
 }
 
 function getPartSolutionTitle(part: ExercisePart, partIndex: number): string {
-  return partIndex === 0 ? 'Word embeddings results' : part.title.replace(/^Part \d+ - /, '');
+  return partIndex === 0 && part.title.includes('Word Embeddings')
+    ? 'Word embeddings results'
+    : part.title.replace(/^Part \d+ - /, '');
 }
 
-function renderPartSolutionContent(part: ExercisePart, partIndex: number, solution: NonNullable<Exercise['solution']>): string {
-  if (partIndex === 0) {
-    return renderEmbeddingSolution(solution);
+function renderPartSolutionContent(part: ExercisePart, partIndex: number, exercise: Exercise): string {
+  if (partIndex === 0 && exercise.solution) {
+    return renderEmbeddingSolution(exercise.solution);
   }
 
   if (part.solutionBlocks?.length) {
@@ -314,6 +322,21 @@ function renderPartSolutionContent(part: ExercisePart, partIndex: number, soluti
   }
 
   return renderLegacySolutionSteps(part.solutionSteps);
+}
+
+function renderNotebookResource(notebook: NonNullable<Exercise['notebook']>): string {
+  return html`
+    <section class="result-summary">
+      <span class="answer-label">Runnable notebook</span>
+      <h3>${escapeHtml(notebook.title)}</h3>
+      ${notebook.description ? `<p>${escapeHtml(notebook.description)}</p>` : ''}
+      <div class="solution-actions compact">
+        ${notebook.runUrl ? `<a class="primary-action" href="${escapeHtml(notebook.runUrl)}" target="_blank" rel="noreferrer">Run notebook in Colab</a>` : ''}
+        <a class="${notebook.runUrl ? 'secondary-action' : 'primary-action'}" href="/${escapeHtml(notebook.path)}" download>Download notebook</a>
+        <a class="secondary-action" href="/${escapeHtml(notebook.path)}" target="_blank" rel="noreferrer">View notebook file</a>
+      </div>
+    </section>
+  `;
 }
 
 function renderEmbeddingSolution(solution: NonNullable<Exercise['solution']>): string {
