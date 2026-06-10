@@ -1,5 +1,10 @@
 import { courseWeeks } from './course/weeks.js';
 import { siteConfig } from './siteConfig.js';
+import {
+  calculatePopulationHistory,
+  clampPopulationValue,
+  type PopulationPoint,
+} from './course/populationDynamics.js';
 import type { CourseWeek, Exercise, ExercisePart, MatrixDisplay, SolutionBlock } from './course/types.js';
 
 type Route =
@@ -86,6 +91,8 @@ function render(): void {
       </div>
     </main>
   `;
+
+  initializePopulationSimulator();
 }
 
 function renderRouteContent(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
@@ -245,6 +252,7 @@ function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
       </div>
       ${renderPartSwitcher(week, exercise, activePartIndex)}
       ${exercise.notebook ? renderNotebookResource(exercise.notebook) : ''}
+      ${exercise.id === 'exercise-2-population-dynamics' ? renderPopulationSimulator() : ''}
       ${renderFileResources(exercise)}
       ${renderPartWorkspace(activePart, activePartIndex, exercise)}
     </article>
@@ -337,6 +345,195 @@ function renderNotebookResource(notebook: NonNullable<Exercise['notebook']>): st
       </div>
     </section>
   `;
+}
+
+function renderPopulationSimulator(): string {
+  const controls = [
+    { id: 'algae', label: 'Algae', value: 10, color: '#198754' },
+    { id: 'small-fish', label: 'Small fish', value: 20, color: '#2563eb' },
+    { id: 'large-fish', label: 'Large fish', value: 4, color: '#d97706' },
+  ];
+
+  return html`
+    <section class="population-simulator" data-population-simulator>
+      <div class="simulator-heading">
+        <div>
+          <span class="answer-label">Interactive simulator</span>
+          <h3>Explore the first 30 years</h3>
+          <p>Type a starting value or move its slider. The graph updates immediately using the exercise transition matrix.</p>
+        </div>
+        <button class="secondary-action simulator-reset" type="button" data-simulator-reset>Reset values</button>
+      </div>
+      <div class="simulator-layout">
+        <div class="population-controls">
+          ${controls.map((control, index) => html`
+            <div class="population-control" style="--series-color: ${control.color}">
+              <label for="${control.id}-number">
+                <span class="series-dot" aria-hidden="true"></span>
+                ${control.label}
+              </label>
+              <div class="population-input-row">
+                <input
+                  id="${control.id}-number"
+                  type="number"
+                  min="0"
+                  max="200"
+                  step="1"
+                  value="${control.value}"
+                  data-population-number="${index}"
+                  aria-label="${control.label} starting population"
+                >
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  step="1"
+                  value="${control.value}"
+                  data-population-range="${index}"
+                  aria-label="${control.label} starting population slider"
+                >
+              </div>
+            </div>
+          `).join('')}
+          <div class="simulator-readout" aria-live="polite">
+            <div><span>Starting total</span><strong data-starting-total>34</strong></div>
+            <div><span>Year 30</span><strong data-year-30-summary>11.33 / 11.33 / 11.33</strong></div>
+          </div>
+        </div>
+        <figure class="population-chart">
+          <svg
+            viewBox="0 0 760 390"
+            role="img"
+            aria-labelledby="population-chart-title population-chart-description"
+            data-population-chart
+          ></svg>
+          <figcaption>
+            <span><i style="--series-color: #198754"></i>Algae</span>
+            <span><i style="--series-color: #2563eb"></i>Small fish</span>
+            <span><i style="--series-color: #d97706"></i>Large fish</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  `;
+}
+
+function initializePopulationSimulator(): void {
+  const simulator = root.querySelector<HTMLElement>('[data-population-simulator]');
+  if (!simulator) {
+    return;
+  }
+
+  const numberInputs = Array.from(simulator.querySelectorAll<HTMLInputElement>('[data-population-number]'));
+  const rangeInputs = Array.from(simulator.querySelectorAll<HTMLInputElement>('[data-population-range]'));
+  const resetButton = simulator.querySelector<HTMLButtonElement>('[data-simulator-reset]');
+  const initialValues: PopulationPoint = [10, 20, 4];
+
+  const update = (): void => {
+    const startingVector = numberInputs.map((input) => clampPopulationValue(input.value)) as PopulationPoint;
+    numberInputs.forEach((input, index) => {
+      input.value = String(startingVector[index]);
+      rangeInputs[index].value = String(startingVector[index]);
+    });
+    drawPopulationChart(simulator, startingVector);
+  };
+
+  numberInputs.forEach((input) => {
+    input.addEventListener('input', update);
+  });
+
+  rangeInputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      numberInputs[index].value = input.value;
+      update();
+    });
+  });
+
+  resetButton?.addEventListener('click', () => {
+    numberInputs.forEach((input, index) => {
+      input.value = String(initialValues[index]);
+    });
+    update();
+  });
+
+  update();
+}
+
+function drawPopulationChart(simulator: HTMLElement, startingVector: PopulationPoint): void {
+  const chart = simulator.querySelector<SVGSVGElement>('[data-population-chart]');
+  const startingTotal = simulator.querySelector<HTMLElement>('[data-starting-total]');
+  const year30Summary = simulator.querySelector<HTMLElement>('[data-year-30-summary]');
+  if (!chart || !startingTotal || !year30Summary) {
+    return;
+  }
+
+  const history = calculatePopulationHistory(startingVector);
+  const year30 = history[29];
+  const colors = ['#198754', '#2563eb', '#d97706'];
+  const labels = ['Algae', 'Small fish', 'Large fish'];
+  const width = 760;
+  const height = 390;
+  const margin = { top: 34, right: 24, bottom: 52, left: 64 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const largestValue = Math.max(1, ...history.flat());
+  const yMaximum = Math.ceil(largestValue / 10) * 10;
+  const xForYear = (yearIndex: number): number => margin.left + (yearIndex / 29) * plotWidth;
+  const yForValue = (value: number): number => margin.top + plotHeight - (value / yMaximum) * plotHeight;
+  const yTicks = Array.from({ length: 6 }, (_, index) => (yMaximum / 5) * index);
+  const xTicks = [0, 4, 9, 14, 19, 24, 29];
+
+  const gridLines = yTicks.map((tick) => {
+    const y = yForValue(tick);
+    return html`
+      <line class="chart-grid-line" x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}"></line>
+      <text class="chart-axis-label" x="${margin.left - 12}" y="${y + 4}" text-anchor="end">${formatChartValue(tick)}</text>
+    `;
+  }).join('');
+
+  const yearLabels = xTicks.map((yearIndex) => {
+    const x = xForYear(yearIndex);
+    return html`
+      <line class="chart-tick" x1="${x}" y1="${height - margin.bottom}" x2="${x}" y2="${height - margin.bottom + 6}"></line>
+      <text class="chart-axis-label" x="${x}" y="${height - margin.bottom + 24}" text-anchor="middle">${yearIndex + 1}</text>
+    `;
+  }).join('');
+
+  const series = colors.map((color, speciesIndex) => {
+    const points = history
+      .map((values, yearIndex) => `${xForYear(yearIndex).toFixed(2)},${yForValue(values[speciesIndex]).toFixed(2)}`)
+      .join(' ');
+    const finalX = xForYear(29);
+    const finalY = yForValue(year30[speciesIndex]);
+    return html`
+      <polyline class="population-series" points="${points}" style="--series-color: ${color}"></polyline>
+      <circle class="population-series-point" cx="${finalX}" cy="${finalY}" r="4" style="--series-color: ${color}"></circle>
+    `;
+  }).join('');
+
+  const description = labels
+    .map((label, index) => `${label} starts at ${formatChartValue(startingVector[index])} and reaches ${year30[index].toFixed(2)} in Year 30`)
+    .join('. ');
+
+  chart.innerHTML = html`
+    <title id="population-chart-title">Lake population distribution over 30 years</title>
+    <desc id="population-chart-description">${escapeHtml(description)}.</desc>
+    <text class="chart-title" x="${margin.left}" y="20">Population by year</text>
+    ${gridLines}
+    <line class="chart-axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
+    <line class="chart-axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+    ${yearLabels}
+    ${series}
+    <text class="chart-axis-title" x="${margin.left + plotWidth / 2}" y="${height - 8}" text-anchor="middle">Year</text>
+    <text class="chart-axis-title" x="16" y="${margin.top + plotHeight / 2}" text-anchor="middle" transform="rotate(-90 16 ${margin.top + plotHeight / 2})">Population</text>
+  `;
+
+  startingTotal.textContent = formatChartValue(startingVector.reduce((sum, value) => sum + value, 0));
+  year30Summary.textContent = year30.map((value) => value.toFixed(2)).join(' / ');
+}
+
+function formatChartValue(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 function renderEmbeddingSolution(solution: NonNullable<Exercise['solution']>): string {

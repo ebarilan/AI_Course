@@ -10,7 +10,7 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: #f5f7fa; }
-button, a { font: inherit; }
+button, a, input { font: inherit; }
 a { color: inherit; }
 
 .app-shell {
@@ -558,6 +558,216 @@ code {
 
 .result-summary p { margin: 7px 0 0; }
 
+.population-simulator {
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.simulator-heading {
+  align-items: start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.simulator-heading h3 {
+  margin: 3px 0 0;
+}
+
+.simulator-heading p {
+  margin: 7px 0 0;
+  max-width: 660px;
+}
+
+.simulator-reset {
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.simulator-layout {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.8fr);
+  margin-top: 20px;
+}
+
+.population-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.population-control {
+  background: #ffffff;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  padding: 13px;
+}
+
+.population-control label {
+  align-items: center;
+  color: #111827;
+  display: flex;
+  font-weight: 850;
+  gap: 8px;
+}
+
+.series-dot {
+  background: var(--series-color);
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.population-input-row {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 76px minmax(0, 1fr);
+  margin-top: 10px;
+}
+
+.population-input-row input[type="number"] {
+  border: 1px solid #c9d3df;
+  border-radius: 7px;
+  color: #111827;
+  font-weight: 800;
+  min-width: 0;
+  padding: 8px 9px;
+  width: 100%;
+}
+
+.population-input-row input[type="number"]:focus,
+.population-input-row input[type="range"]:focus-visible {
+  outline: 3px solid rgba(49, 92, 114, 0.22);
+  outline-offset: 2px;
+}
+
+.population-input-row input[type="range"] {
+  accent-color: var(--series-color);
+  cursor: pointer;
+  min-width: 0;
+  width: 100%;
+}
+
+.simulator-readout {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+}
+
+.simulator-readout div {
+  background: #183447;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 11px 12px;
+}
+
+.simulator-readout span {
+  color: #c8dce7;
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.simulator-readout strong {
+  display: block;
+  font-size: 0.94rem;
+  margin-top: 3px;
+}
+
+.population-chart {
+  background: #ffffff;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  margin: 0;
+  min-width: 0;
+  padding: 12px;
+}
+
+.population-chart svg {
+  display: block;
+  height: auto;
+  overflow: visible;
+  width: 100%;
+}
+
+.population-chart figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.population-chart figcaption span {
+  align-items: center;
+  color: #334155;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 6px;
+}
+
+.population-chart figcaption i {
+  background: var(--series-color);
+  border-radius: 50%;
+  height: 9px;
+  width: 9px;
+}
+
+.chart-grid-line {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.chart-axis,
+.chart-tick {
+  stroke: #64748b;
+  stroke-width: 1.25;
+}
+
+.chart-axis-label,
+.chart-axis-title,
+.chart-title {
+  fill: #475569;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.chart-axis-label {
+  font-size: 12px;
+}
+
+.chart-axis-title {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.chart-title {
+  fill: #183447;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.population-series {
+  fill: none;
+  stroke: var(--series-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.population-series-point {
+  fill: #ffffff;
+  stroke: var(--series-color);
+  stroke-width: 3;
+}
+
 table {
   background: #ffffff;
   border: 1px solid #dbe3ec;
@@ -693,12 +903,14 @@ tr:last-child td { border-bottom: 0; }
   .briefing-grid,
   .part-switcher,
   .exercise-summary,
-  .part-row {
+  .part-row,
+  .simulator-layout {
     grid-template-columns: 1fr;
   }
 
   .week-nav { position: static; }
-  .page-title-row { display: grid; }
+  .page-title-row,
+  .simulator-heading { display: grid; }
 }
 
 @media (max-width: 560px) {
@@ -709,4 +921,6 @@ tr:last-child td { border-bottom: 0; }
   h1 { font-size: 2.1rem; }
   .primary-action,
   .secondary-action { width: 100%; }
+  .population-input-row { grid-template-columns: 68px minmax(0, 1fr); }
+  .population-chart { padding: 6px; }
 }
