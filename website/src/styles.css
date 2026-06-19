@@ -566,6 +566,14 @@ code {
   padding: 18px;
 }
 
+.markov-diffusion {
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  margin-top: 18px;
+  padding: 18px;
+}
+
 .simulator-heading {
   align-items: start;
   display: flex;
@@ -681,7 +689,31 @@ code {
   margin-top: 3px;
 }
 
-.population-chart {
+.diffusion-stats {
+  background: #183447;
+  border-radius: 8px;
+  color: #ffffff;
+  flex: 0 0 auto;
+  min-width: 150px;
+  padding: 11px 12px;
+}
+
+.diffusion-stats span {
+  color: #c8dce7;
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.diffusion-stats strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-top: 3px;
+}
+
+.population-chart,
+.diffusion-chart {
   background: #ffffff;
   border: 1px solid #dbe3ec;
   border-radius: 8px;
@@ -690,14 +722,20 @@ code {
   padding: 12px;
 }
 
-.population-chart svg {
+.diffusion-chart {
+  margin-top: 20px;
+}
+
+.population-chart svg,
+.diffusion-chart svg {
   display: block;
   height: auto;
   overflow: visible;
   width: 100%;
 }
 
-.population-chart figcaption {
+.population-chart figcaption,
+.diffusion-chart figcaption {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
@@ -705,7 +743,8 @@ code {
   margin-top: 4px;
 }
 
-.population-chart figcaption span {
+.population-chart figcaption span,
+.diffusion-chart figcaption span {
   align-items: center;
   color: #334155;
   display: inline-flex;
@@ -714,7 +753,8 @@ code {
   gap: 6px;
 }
 
-.population-chart figcaption i {
+.population-chart figcaption i,
+.diffusion-chart figcaption i {
   background: var(--series-color);
   border-radius: 50%;
   height: 9px;
@@ -766,6 +806,14 @@ code {
   fill: #ffffff;
   stroke: var(--series-color);
   stroke-width: 3;
+}
+
+.diffusion-series {
+  fill: none;
+  stroke: var(--series-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.6;
 }
 
 table {

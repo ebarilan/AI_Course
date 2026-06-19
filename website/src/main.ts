@@ -5,6 +5,7 @@ import {
   clampPopulationValue,
   type PopulationPoint,
 } from './course/populationDynamics.js';
+import { calculateReflectingWalkSnapshots } from './course/markovChains.js';
 import type { CourseWeek, Exercise, ExercisePart, MatrixDisplay, SolutionBlock } from './course/types.js';
 
 type Route =
@@ -93,6 +94,7 @@ function render(): void {
   `;
 
   initializePopulationSimulator();
+  initializeMarkovDiffusionVisualization();
 }
 
 function renderRouteContent(week: CourseWeek, exercise: Exercise | undefined, route: Route): string {
@@ -253,6 +255,7 @@ function renderExercisePage(week: CourseWeek, exercise: Exercise): string {
       ${renderPartSwitcher(week, exercise, activePartIndex)}
       ${exercise.notebook ? renderNotebookResource(exercise.notebook) : ''}
       ${exercise.id === 'exercise-2-population-dynamics' ? renderPopulationSimulator() : ''}
+      ${exercise.id === 'exercise-3-markov-chains' ? renderMarkovDiffusionVisualization() : ''}
       ${renderFileResources(exercise)}
       ${renderPartWorkspace(activePart, activePartIndex, exercise)}
     </article>
@@ -534,6 +537,110 @@ function drawPopulationChart(simulator: HTMLElement, startingVector: PopulationP
 
 function formatChartValue(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function renderMarkovDiffusionVisualization(): string {
+  return html`
+    <section class="markov-diffusion" data-markov-diffusion>
+      <div class="simulator-heading">
+        <div>
+          <span class="answer-label">Part D visualization</span>
+          <h3>100-state random-walk diffusion</h3>
+          <p>The same transition rule from Part A spreads a single middle-state spike into a wider distribution.</p>
+        </div>
+        <div class="diffusion-stats" aria-live="polite">
+          <span>Peak at t = 500</span>
+          <strong data-diffusion-peak>0.000</strong>
+        </div>
+      </div>
+      <figure class="diffusion-chart">
+        <svg
+          viewBox="0 0 760 390"
+          role="img"
+          aria-labelledby="diffusion-chart-title diffusion-chart-description"
+          data-diffusion-chart
+        ></svg>
+        <figcaption>
+          <span><i style="--series-color: #111827"></i>t = 0</span>
+          <span><i style="--series-color: #198754"></i>t = 50</span>
+          <span><i style="--series-color: #d97706"></i>t = 100</span>
+          <span><i style="--series-color: #be123c"></i>t = 500</span>
+        </figcaption>
+      </figure>
+    </section>
+  `;
+}
+
+function initializeMarkovDiffusionVisualization(): void {
+  const visualization = root.querySelector<HTMLElement>('[data-markov-diffusion]');
+  if (!visualization) {
+    return;
+  }
+
+  const chart = visualization.querySelector<SVGSVGElement>('[data-diffusion-chart]');
+  const peakReadout = visualization.querySelector<HTMLElement>('[data-diffusion-peak]');
+  if (!chart || !peakReadout) {
+    return;
+  }
+
+  const snapshots = calculateReflectingWalkSnapshots();
+  const colors = ['#111827', '#198754', '#d97706', '#be123c'];
+  const width = 760;
+  const height = 390;
+  const margin = { top: 34, right: 24, bottom: 52, left: 64 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const yMaximum = Math.max(...snapshots.flatMap((snapshot) => snapshot.values)) * 1.08;
+  const xForState = (stateIndex: number): number => margin.left + (stateIndex / 99) * plotWidth;
+  const yForValue = (value: number): number => margin.top + plotHeight - (value / yMaximum) * plotHeight;
+  const yTicks = Array.from({ length: 6 }, (_, index) => (yMaximum / 5) * index);
+  const xTicks = [0, 24, 49, 74, 99];
+
+  const gridLines = yTicks.map((tick) => {
+    const y = yForValue(tick);
+    return html`
+      <line class="chart-grid-line" x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}"></line>
+      <text class="chart-axis-label" x="${margin.left - 12}" y="${y + 4}" text-anchor="end">${tick.toFixed(3)}</text>
+    `;
+  }).join('');
+
+  const stateLabels = xTicks.map((stateIndex) => {
+    const x = xForState(stateIndex);
+    return html`
+      <line class="chart-tick" x1="${x}" y1="${height - margin.bottom}" x2="${x}" y2="${height - margin.bottom + 6}"></line>
+      <text class="chart-axis-label" x="${x}" y="${height - margin.bottom + 24}" text-anchor="middle">${stateIndex + 1}</text>
+    `;
+  }).join('');
+
+  const series = snapshots.map((snapshot, snapshotIndex) => {
+    const points = snapshot.values
+      .map((value, stateIndex) => `${xForState(stateIndex).toFixed(2)},${yForValue(value).toFixed(2)}`)
+      .join(' ');
+    return html`
+      <polyline
+        class="diffusion-series"
+        points="${points}"
+        style="--series-color: ${colors[snapshotIndex]}"
+      ></polyline>
+    `;
+  }).join('');
+
+  const finalSnapshot = snapshots.at(-1);
+  const peak = finalSnapshot ? Math.max(...finalSnapshot.values) : 0;
+  peakReadout.textContent = peak.toFixed(4);
+
+  chart.innerHTML = html`
+    <title id="diffusion-chart-title">100-state Markov diffusion snapshots</title>
+    <desc id="diffusion-chart-description">Probability by state for t equals 0, 50, 100, and 500.</desc>
+    <text class="chart-title" x="${margin.left}" y="20">Probability by state</text>
+    ${gridLines}
+    <line class="chart-axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
+    <line class="chart-axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+    ${stateLabels}
+    ${series}
+    <text class="chart-axis-title" x="${margin.left + plotWidth / 2}" y="${height - 8}" text-anchor="middle">State</text>
+    <text class="chart-axis-title" x="16" y="${margin.top + plotHeight / 2}" text-anchor="middle" transform="rotate(-90 16 ${margin.top + plotHeight / 2})">Probability</text>
+  `;
 }
 
 function renderEmbeddingSolution(solution: NonNullable<Exercise['solution']>): string {
