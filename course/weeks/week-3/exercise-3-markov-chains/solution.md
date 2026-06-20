@@ -129,11 +129,21 @@ keeps the components in the eigenvalue `1` and eigenvalue `-1` directions.
 
 ## Part C
 
-A natural story is a random walker moving between five neighboring locations.
-In Part A, the walker can pause at the edge locations with probability `1/2`.
-In Part B, the walker bounces back from the edge locations immediately. The
-entries of `P(t)` describe the probability of finding the walker at each
-location after `t` steps.
+A natural story is a signal echoing along a one-dimensional line with five
+sample points.
+
+The entries of `P(t)` describe how much signal energy is present at each point
+after `t` time steps.
+
+In Part A, interior points split signal equally left and right. At an edge,
+half of the signal stays at the boundary and half moves inward. This repeated
+averaging smooths the signal, so the distribution converges toward an even
+spread.
+
+In Part B, the boundaries are perfect reflectors: signal at an edge is sent
+fully back inward. For the given starting signal, the energy keeps alternating
+between odd and even positions, so the system cycles instead of converging to
+one stable vector.
 
 ## Part D
 

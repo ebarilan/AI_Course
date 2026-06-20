@@ -13,7 +13,7 @@ Python solution notebook.
 
 The exercise studies two 5-state transition matrices and asks how matrix
 powers, eigenvalues, determinants, and invertibility explain Markov-chain
-behavior. It finishes with a 100-state random-walk visualization.
+behavior. It finishes with a 100-state signal-diffusion visualization.
 
 Open the notebook in Google Colab from the course website and run the cells from
 top to bottom.

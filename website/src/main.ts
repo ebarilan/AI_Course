@@ -545,7 +545,7 @@ function renderMarkovDiffusionVisualization(): string {
       <div class="simulator-heading">
         <div>
           <span class="answer-label">Part D visualization</span>
-          <h3>100-state random-walk diffusion</h3>
+          <h3>100-state signal diffusion</h3>
           <p>The same transition rule from Part A spreads a single middle-state spike into a wider distribution.</p>
         </div>
         <div class="diffusion-stats" aria-live="polite">

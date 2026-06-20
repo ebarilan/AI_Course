@@ -128,16 +128,17 @@ export const markovChainsExercise: Exercise = {
     {
       title: 'Part C - Real-World Story',
       summary:
-        'Invent a real-world interpretation for the transition-matrix process.',
+        'Interpret the two matrices as signal motion along a one-dimensional line.',
       tasks: [
-        'Describe what the five states represent.',
-        'Explain what it means to move left, move right, stay at an edge, or bounce back from an edge.',
-        'Connect the entries of P(t) to probabilities or proportions.',
+        'Treat the five states as five sample points along a line.',
+        'Explain how Part A splits signal left and right while keeping half at a boundary.',
+        'Explain how Part B reflects boundary signal fully inward.',
+        'Connect Part A to averaging/convergence and Part B to cyclic echo behavior.',
       ],
       solutionBlocks: [
         {
-          heading: 'Random-walker story',
-          text: 'Imagine a person moving between five neighboring rooms in a hallway. P(t) gives the probability of finding the person in each room after t steps. In Part A, a person at an end room may stay there with probability 1/2. In Part B, a person at an end room must bounce back inward.',
+          heading: 'Signal echo story',
+          text: 'Imagine a signal echoing along a one-dimensional line with five sample points. P(t) tells us how much signal energy is present at each point after t steps. In Part A, interior points split signal equally left and right, while an edge keeps half and sends half inward. That repeated averaging smooths the signal and converges toward an even spread. In Part B, the edges are perfect reflectors: signal at an edge is sent fully inward. For the given starting signal, the energy alternates between odd and even positions, so the process cycles instead of converging to one stable vector.',
         },
       ],
     },
